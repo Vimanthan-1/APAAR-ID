@@ -26,7 +26,7 @@ const portalCards = [
   },
   {
     role: ROLE.COLLEGE,
-    title: 'Institution Registrar Portal',
+    title: 'Institution Registration Portal',
     subtitle: 'Batch Ingestion & Quota Matrix',
     tag: 'Academic Institution',
     description:
