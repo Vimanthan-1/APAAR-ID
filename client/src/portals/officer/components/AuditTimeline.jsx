@@ -115,6 +115,95 @@ function getActionConfig(action) {
           </svg>
         ),
       };
+    // ─── APAAR Domain Actions ───
+    case AUDIT_ACTION.DUPLICATE_ENROLMENT_FLAGGED:
+      return {
+        label: 'Duplicate Enrolment Flagged',
+        badgeClass: 'bg-red-100 text-red-950 border-red-300 font-extrabold',
+        dotBg: 'bg-red-600 text-white ring-4 ring-red-300 animate-pulse shadow-md',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        ),
+      };
+    case AUDIT_ACTION.INTAKE_BREACH_DETECTED:
+      return {
+        label: 'Intake Quota Breach',
+        badgeClass: 'bg-amber-100 text-amber-950 border-amber-300 font-bold',
+        dotBg: 'bg-amber-600 text-white ring-4 ring-amber-200 shadow-sm',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        ),
+      };
+    case AUDIT_ACTION.STUDENT_BATCH_UPLOADED:
+      return {
+        label: 'Student Batch Ingested',
+        badgeClass: 'bg-blue-100 text-blue-950 border-blue-300 font-semibold',
+        dotBg: 'bg-[#1F6FEB] text-white shadow-xs',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        ),
+      };
+    case AUDIT_ACTION.APAAR_VALIDATED:
+      return {
+        label: 'APAAR Registry Verification',
+        badgeClass: 'bg-teal-100 text-teal-950 border-teal-300 font-semibold',
+        dotBg: 'bg-teal-600 text-white shadow-xs',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        ),
+      };
+    case AUDIT_ACTION.STAKEHOLDER_VERIFICATION:
+      return {
+        label: 'Stakeholder Identity Query',
+        badgeClass: 'bg-purple-100 text-purple-950 border-purple-300 font-semibold',
+        dotBg: 'bg-purple-600 text-white shadow-xs',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        ),
+      };
+    case AUDIT_ACTION.SHOW_CAUSE_ISSUED:
+      return {
+        label: 'Regulatory Notice Issued',
+        badgeClass: 'bg-rose-100 text-rose-950 border-rose-300 font-bold',
+        dotBg: 'bg-rose-600 text-white shadow-xs',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        ),
+      };
+    case AUDIT_ACTION.CERTIFICATE_GENERATED:
+      return {
+        label: 'Verifiable Certificate Generated',
+        badgeClass: 'bg-indigo-100 text-indigo-950 border-indigo-300 font-semibold',
+        dotBg: 'bg-indigo-600 text-white shadow-xs',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        ),
+      };
+    case AUDIT_ACTION.CONSENT_RECORDED:
+      return {
+        label: 'DPDP Student Consent Archived',
+        badgeClass: 'bg-emerald-100 text-emerald-950 border-emerald-300 font-semibold',
+        dotBg: 'bg-emerald-600 text-white shadow-xs',
+        icon: (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        ),
+      };
     default:
       return {
         label: action,
@@ -247,14 +336,32 @@ export default function AuditTimeline({
                           {config.label}
                         </span>
 
-                        {/* Application Scope Tag */}
-                        {evt.applicationId && (!highlightAppId || highlightAppId !== evt.applicationId) && (
-                          <Link
-                            to={`/officer/applications/${evt.applicationId}`}
-                            className="inline-flex items-center space-x-1 text-xs font-mono font-bold bg-slate-100 hover:bg-slate-200 text-[#0F2A4A] px-2.5 py-0.5 rounded-md border border-slate-200 transition-colors"
-                            title="Inspect application scrutiny"
+                        {/* Institution / Target Scope Tag */}
+                        {evt.applicationId && (
+                          <span
+                            className="inline-flex items-center space-x-1 text-xs font-mono font-bold bg-slate-100 text-[#0F2A4A] px-2.5 py-0.5 rounded-md border border-slate-200"
                           >
                             <span>{evt.applicationId}</span>
+                          </span>
+                        )}
+
+                        {/* Direct Action Link for Duplicate Enrolments */}
+                        {evt.action === AUDIT_ACTION.DUPLICATE_ENROLMENT_FLAGGED && (
+                          <Link
+                            to="/officer/graph"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold bg-red-600 hover:bg-red-700 text-white px-2.5 py-0.5 rounded-md shadow-2xs transition-colors"
+                          >
+                            <span>Inspect Conflict Graph →</span>
+                          </Link>
+                        )}
+
+                        {/* Direct Action Link for Public Verifications */}
+                        {evt.action === AUDIT_ACTION.STAKEHOLDER_VERIFICATION && evt.ref && (
+                          <Link
+                            to={`/verify/${evt.ref}`}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold bg-purple-600 hover:bg-purple-700 text-white px-2.5 py-0.5 rounded-md shadow-2xs transition-colors"
+                          >
+                            <span>Verify Record →</span>
                           </Link>
                         )}
 

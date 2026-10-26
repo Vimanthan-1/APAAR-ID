@@ -84,3 +84,79 @@ export async function resetDemo() {
   await delay(100);
   return mockDb.resetDemo();
 }
+
+/**
+ * Fetch cross-institution relationship graph data.
+ * @param {string} [id]
+ * @returns {Promise<Object>}
+ */
+export async function getGraph(id) {
+  await delay();
+  return mockDb.getGraph(id);
+}
+
+export async function getApaarGraph(id) {
+  await delay();
+  return mockDb.getApaarGraph(id);
+}
+
+/**
+ * Fetch all institutions with intake and APAAR status.
+ * @returns {Promise<Array>}
+ */
+export async function getInstitutions() {
+  await delay();
+  return mockDb.getInstitutions();
+}
+
+/**
+ * Fetch single institution by ID.
+ * @param {string} id
+ * @returns {Promise<Object|null>}
+ */
+export async function getInstitution(id) {
+  await delay();
+  return mockDb.getInstitutionById(id);
+}
+
+/**
+ * Fetch student roster, optionally filtered by institution.
+ * @param {string} [institutionId]
+ * @returns {Promise<Array>}
+ */
+export async function getStudents(institutionId) {
+  await delay();
+  return mockDb.getStudents(institutionId);
+}
+
+/**
+ * Fetch single student by APAAR ID.
+ * @param {string} apaarId
+ * @returns {Promise<Object|null>}
+ */
+export async function getStudentByApaar(apaarId) {
+  await delay();
+  return mockDb.getStudentByApaar(apaarId);
+}
+
+/**
+ * Run automated validation on a batch of students.
+ * @param {string} institutionId
+ * @param {Array} batchRows
+ * @returns {Promise<Object>}
+ */
+export async function validateStudentBatch(institutionId, batchRows) {
+  await delay(400); // Simulate AICTE validation pipeline latency
+  return mockDb.validateStudentBatch(institutionId, batchRows);
+}
+
+/**
+ * Submit validated student batch to the central AICTE repository.
+ * @param {string} institutionId
+ * @param {Array} validatedBatch
+ * @returns {Promise<Object>}
+ */
+export async function submitStudentBatch(institutionId, validatedBatch) {
+  await delay(500);
+  return mockDb.submitStudentBatch(institutionId, validatedBatch);
+}

@@ -2,6 +2,7 @@ import initialApplications from '../mock/applications.json';
 import initialFindings from '../mock/findings.json';
 import initialAudit from '../mock/audit.json';
 import initialAlerts from '../mock/alerts.json';
+import { INSTITUTIONS_DATA, STUDENT_RECORDS_DATA, APAAR_GRAPH_DATA } from '../mock/apaarData.js';
 import {
   AUDIT_ACTION,
   AUDIT_ACTOR,
@@ -20,6 +21,9 @@ let applications = clone(initialApplications);
 let findings = clone(initialFindings);
 let auditTrail = clone(initialAudit);
 let alerts = clone(initialAlerts);
+let institutions = clone(INSTITUTIONS_DATA);
+let students = clone(STUDENT_RECORDS_DATA);
+let apaarGraph = clone(APAAR_GRAPH_DATA);
 
 function get90DaysLimit(anchorStr) {
   const d = new Date(anchorStr + 'T00:00:00Z');
@@ -338,11 +342,182 @@ export const mockDb = {
     };
   },
 
+  // ==========================================
+  // APAAR STUDENT DATA & VERIFICATION METHODS
+  // ==========================================
+
+  getInstitutions: () => clone(institutions),
+
+  getInstitutionById: (id) => clone(institutions.find((i) => i.id === id) || null),
+
+  getStudents: (institutionId) => {
+    let list = clone(students);
+    if (institutionId) {
+      list = list.filter((s) => s.institutionId === institutionId);
+    }
+    return list;
+  },
+
+  getStudentByApaar: (apaarId) => {
+    if (!apaarId) return null;
+    const clean = apaarId.replace(/[\s-]/g, '');
+    const found = students.find((s) => s.apaarId.replace(/[\s-]/g, '') === clean);
+    return found ? clone(found) : null;
+  },
+
+  getGraph: (id) => clone(apaarGraph),
+  getApaarGraph: (id) => clone(apaarGraph),
+
+  /**
+   * Automated Student Batch Validation Engine
+   * Validates APAAR format, intra-batch duplicates, cross-institution conflicts, and intake capacity.
+   */
+  validateStudentBatch: (institutionId, batchRows) => {
+    const institution = institutions.find((i) => i.id === institutionId) || institutions[0];
+    const results = [];
+    const seenInBatch = new Set();
+    let currentTotal = institution.summary.totalActualEnrolment;
+    const approvedCap = institution.summary.totalApprovedIntake;
+
+    for (const row of batchRows) {
+      const cleanApaar = (row.apaarId || '').replace(/[\s-]/g, '');
+      const issues = [];
+      let status = 'VERIFIED';
+
+      // 1. Check APAAR format (12 digits)
+      if (!/^\d{12}$/.test(cleanApaar)) {
+        issues.push({
+          type: 'INVALID_APAAR_FORMAT',
+          message: `Invalid APAAR format: "${row.apaarId}". Must be a valid 12-digit national academic ID.`,
+          severity: 'high',
+        });
+        status = 'INVALID_APAAR';
+      }
+
+      // 2. Intra-batch duplicate check
+      if (cleanApaar && seenInBatch.has(cleanApaar)) {
+        issues.push({
+          type: 'DUPLICATE_INTRA_BATCH',
+          message: `Duplicate student entry in the same upload file for APAAR ${row.apaarId}.`,
+          severity: 'high',
+        });
+        status = 'DUPLICATE_INTRA_INSTITUTE';
+      }
+      if (cleanApaar) seenInBatch.add(cleanApaar);
+
+      // 3. Cross-institution duplicate check against existing national repository
+      const crossConflict = students.find(
+        (s) => s.apaarId.replace(/[\s-]/g, '') === cleanApaar && s.institutionId !== institutionId
+      );
+      if (crossConflict) {
+        issues.push({
+          type: 'CONCURRENT_DUAL_ENROLMENT',
+          message: `CRITICAL: APAAR ${row.apaarId} already has an active full-time enrolment at ${crossConflict.institutionName} (${crossConflict.courseName}, Roll: ${crossConflict.studentRollNo}).`,
+          severity: 'high',
+          conflictingInstitution: crossConflict,
+        });
+        status = 'DUPLICATE_CROSS_INSTITUTE';
+      }
+
+      // 4. Intake Capacity Breach check
+      if (currentTotal + 1 > approvedCap + 15) {
+        issues.push({
+          type: 'INTAKE_CAPACITY_BREACH',
+          message: `Admitting student exceeds statutory approved intake cap (${approvedCap} seats).`,
+          severity: 'medium',
+        });
+        if (status === 'VERIFIED') status = 'INTAKE_QUOTA_BREACH';
+      }
+
+      currentTotal += 1;
+
+      results.push({
+        ...row,
+        cleanApaar,
+        status,
+        issues,
+        isNri: Boolean(row.isNri || row.admissionCategory === 'NRI'),
+        isOci: Boolean(row.isOci || row.admissionCategory === 'OCI'),
+        isForeignNational: Boolean(row.isForeignNational || row.admissionCategory === 'FN'),
+      });
+    }
+
+    return {
+      institutionId,
+      totalSubmitted: batchRows.length,
+      validCount: results.filter((r) => r.status === 'VERIFIED').length,
+      flaggedCount: results.filter((r) => r.status !== 'VERIFIED').length,
+      results,
+    };
+  },
+
+  /**
+   * Submit validated student batch and update institution enrolment stats
+   */
+  submitStudentBatch: (institutionId, validatedBatch) => {
+    const instIndex = institutions.findIndex((i) => i.id === institutionId);
+    const inst = instIndex !== -1 ? institutions[instIndex] : institutions[0];
+
+    const timestamp = new Date().toISOString();
+    const newStudents = validatedBatch.map((s, idx) => ({
+      id: `STU-${Date.now()}-${idx}`,
+      apaarId: s.apaarId,
+      fullName: s.fullName,
+      dob: s.dob || '2005-01-01',
+      gender: s.gender || 'Not specified',
+      institutionId: inst.id,
+      institutionName: inst.name,
+      courseId: s.courseId || inst.programs[0]?.id || 'PRG-GEN',
+      courseName: s.courseName || inst.programs[0]?.name || 'Engineering Curriculum',
+      studentRollNo: s.studentRollNo || `ROLL-${Date.now()}-${idx}`,
+      admissionYear: inst.academicYear,
+      enrolmentDate: new Date().toISOString().slice(0, 10),
+      admissionCategory: s.admissionCategory || 'GENERAL',
+      subCategory: s.subCategory || 'Open Merit',
+      isNri: Boolean(s.isNri),
+      isOci: Boolean(s.isOci),
+      isForeignNational: Boolean(s.isForeignNational),
+      digilockerStatus: s.status === 'VERIFIED' ? 'VERIFIED' : 'PENDING',
+      biometricSeeded: s.status === 'VERIFIED',
+      verificationStatus: s.status,
+    }));
+
+    // Update in-memory students
+    students.unshift(...newStudents);
+
+    // Update institution summary counts
+    inst.summary.totalActualEnrolment += newStudents.length;
+    if (inst.summary.totalActualEnrolment > inst.summary.totalApprovedIntake) {
+      inst.summary.status = 'INTAKE_BREACH_DETECTED';
+    }
+
+    // Append to audit trail
+    const auditEvent = {
+      id: `AUD-APAAR-${Date.now()}`,
+      applicationId: inst.id,
+      ts: timestamp,
+      actor: inst.name,
+      action: 'STUDENT_BATCH_UPLOADED',
+      detail: `Submitted ${newStudents.length} student records under APAAR identification protocol. Flagged: ${validatedBatch.filter(b => b.status !== 'VERIFIED').length}`,
+      ref: inst.id,
+    };
+    auditTrail.unshift(auditEvent);
+
+    return {
+      success: true,
+      addedCount: newStudents.length,
+      institution: clone(inst),
+    };
+  },
+
   resetDemo: () => {
     applications = clone(initialApplications);
     findings = clone(initialFindings);
     auditTrail = clone(initialAudit);
     alerts = clone(initialAlerts);
+    institutions = clone(INSTITUTIONS_DATA);
+    students = clone(STUDENT_RECORDS_DATA);
+    apaarGraph = clone(APAAR_GRAPH_DATA);
     return true;
   },
 };

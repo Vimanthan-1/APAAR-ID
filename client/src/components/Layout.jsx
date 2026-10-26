@@ -60,7 +60,8 @@ export default function Layout() {
   const navItems = [
     {
       to: '/officer/dashboard',
-      label: 'Dashboard',
+      label: 'Intake Surveillance',
+      sublabel: 'National Admission Overview',
       icon: (
         <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -68,18 +69,21 @@ export default function Layout() {
       ),
     },
     {
-      to: '/officer/applications/APP-001',
-      label: 'Application Review',
-      sublabel: 'Demo Queue',
+      to: '/officer/graph',
+      label: 'Cross-Enrolment Graph',
+      sublabel: 'Duplicate Detection',
+      badge: '1 Critical',
+      badgeColor: 'bg-red-500 text-white animate-pulse',
       icon: (
         <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
     },
     {
       to: '/officer/audit',
-      label: 'Audit Trail',
+      label: 'National Audit Trail',
+      sublabel: 'Immutable Log',
       icon: (
         <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -136,14 +140,14 @@ export default function Layout() {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
-                  AICTE Application Validation Portal
+                  AICTE Central Surveillance Portal
                 </span>
                 <span className="hidden lg:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                  Concept Demo · Synthetic Data
+                  APAAR Identity Registry
                 </span>
               </div>
               <div className="text-xs text-slate-400">
-                Ministry of Education · Advisory First-Pass Scrutiny
+                Ministry of Education · Student Admission Monitoring &amp; Verification
               </div>
             </div>
           </div>
@@ -208,27 +212,32 @@ export default function Layout() {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center px-3.5 py-3 rounded-lg text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-[#1F6FEB] ${
+                  `flex items-center px-3.5 py-3 rounded-xl text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
                     isActive || (item.to.startsWith('/officer/applications') && location.pathname.startsWith('/officer/applications'))
-                      ? 'bg-[#0A192F] text-white shadow-xs'
+                      ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`
                 }
               >
                 {item.icon}
-                <div className="leading-tight">
+                <div className="leading-tight flex-1">
                   <div>{item.label}</div>
                   {item.sublabel && (
-                    <div className="text-[11px] opacity-75 font-normal">{item.sublabel}</div>
+                    <div className="text-[11px] opacity-85 font-normal">{item.sublabel}</div>
                   )}
                 </div>
+                {item.badge && (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
+                    {item.badge}
+                  </span>
+                )}
               </NavLink>
             ))}
 
             <div className="pt-4 mt-4 border-t border-slate-100 px-3">
-              <div className="text-xs text-slate-500 space-y-1.5">
-                <div className="font-semibold text-slate-700">Demonstration Reset:</div>
-                <div className="font-mono text-[11px] bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md inline-block border border-slate-200">
+              <div className="text-xs text-slate-600 space-y-1.5">
+                <div className="font-semibold text-slate-800">Demonstration Reset:</div>
+                <div className="font-mono text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md inline-block border border-slate-200">
                   Alt + Shift + D
                 </div>
               </div>
@@ -267,13 +276,13 @@ export default function Layout() {
       </ConfirmDialog>
 
       {/* Footer */}
-      <footer className="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs sm:text-sm text-slate-500">
+      <footer className="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            AICTE Application Validation & Compliance Verification Platform · Problem Statement SIH26261
+            AICTE APAAR Student Data Management &amp; Verification System · Problem Statement SIH26261
           </div>
-          <div className="text-slate-400 font-mono text-xs">
-            Concept Demo · Advisory Layer
+          <div className="text-slate-500 font-mono text-xs">
+            Central Regulatory Surveillance
           </div>
         </div>
       </footer>

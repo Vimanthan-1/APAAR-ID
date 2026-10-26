@@ -3,28 +3,22 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAppStore } from './store/useAppStore';
 import { ROLE } from './constants';
 
-// Shared / Login
+// Shared / Public
 import Login from './pages/Login';
+import StakeholderVerification from './pages/StakeholderVerification';
 
-// Officer portal
+// AICTE Central Surveillance Portal
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import ApplicationReview from './pages/ApplicationReview';
-import EvidenceViewer from './pages/EvidenceViewer';
+import CrossEnrolmentGraphPage from './pages/CrossEnrolmentGraphPage';
 import AuditTrail from './pages/AuditTrail';
-import OfficerNotFound from './pages/OfficerNotFound';
 
-// College portal
+// Institution Student Registry Portal
 import CollegeLayout from './portals/college/CollegeLayout';
 import StartApplication from './portals/college/pages/StartApplication';
 import UploadDocuments from './portals/college/pages/UploadDocuments';
 import AIProcessing from './portals/college/pages/AIProcessing';
 import Deficiencies from './portals/college/pages/Deficiencies';
-
-// Admin console
-import AdminLayout from './portals/admin/AdminLayout';
-import ChecklistEditor from './portals/admin/pages/ChecklistEditor';
-import ValidationRules from './portals/admin/pages/ValidationRules';
 
 const isDevToolsEnabled = import.meta.env.VITE_DEV_TOOLS === 'true';
 
@@ -43,6 +37,7 @@ function PortalGuard({ requiredRole, children }) {
       [ROLE.OFFICER]: '/officer/dashboard',
       [ROLE.COLLEGE]: '/college/application',
       [ROLE.ADMIN]: '/admin/checklists',
+      [ROLE.VERIFIER]: '/verify',
     };
     return <Navigate to={portalRoutes[currentRole] || '/'} replace />;
   }
@@ -71,7 +66,7 @@ export default function App() {
                     ? '/officer/dashboard'
                     : currentRole === ROLE.COLLEGE
                     ? '/college/application'
-                    : '/admin/checklists'
+                    : '/verify'
                 }
                 replace
               />
@@ -81,7 +76,7 @@ export default function App() {
           }
         />
 
-        {/* ─── Officer Portal ─── */}
+        {/* ─── AICTE Central Surveillance Portal ─── */}
         <Route
           path="/officer"
           element={
@@ -92,23 +87,12 @@ export default function App() {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="applications/:id" element={<ApplicationReview />} />
-          <Route path="applications/:id/findings/:fid" element={<EvidenceViewer />} />
+          <Route path="graph" element={<CrossEnrolmentGraphPage />} />
           <Route path="audit" element={<AuditTrail />} />
-          {isDevToolsEnabled && ComponentsShowcase && (
-            <Route
-              path="_components"
-              element={
-                <React.Suspense fallback={<div className="p-8 text-slate-500">Loading...</div>}>
-                  <ComponentsShowcase />
-                </React.Suspense>
-              }
-            />
-          )}
-          <Route path="*" element={<OfficerNotFound />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>
 
-        {/* ─── College Portal ─── */}
+        {/* ─── Institution Student Registry Portal ─── */}
         <Route
           path="/college"
           element={
@@ -125,20 +109,9 @@ export default function App() {
           <Route path="*" element={<Navigate to="application" replace />} />
         </Route>
 
-        {/* ─── Admin Console ─── */}
-        <Route
-          path="/admin"
-          element={
-            <PortalGuard requiredRole={ROLE.ADMIN}>
-              <AdminLayout />
-            </PortalGuard>
-          }
-        >
-          <Route index element={<Navigate to="checklists" replace />} />
-          <Route path="checklists" element={<ChecklistEditor />} />
-          <Route path="rules" element={<ValidationRules />} />
-          <Route path="*" element={<Navigate to="checklists" replace />} />
-        </Route>
+        {/* ─── Stakeholder / Public Verification ─── */}
+        <Route path="/verify" element={<StakeholderVerification />} />
+        <Route path="/verify/:apaarId" element={<StakeholderVerification />} />
 
         {/* Global fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

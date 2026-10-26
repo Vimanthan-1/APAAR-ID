@@ -1,268 +1,445 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { validateStudentBatch, submitStudentBatch } from '../../../api';
 
-const REQUIRED_DOCS = [
-  { id: 'aff', type: 'Affidavit for EoA & Land Details', description: 'Stamped & notarized affidavit', required: true, acceptedFormats: 'PDF, JPG, PNG' },
-  { id: 'noc', type: 'Fire Safety NOC', description: 'Valid Fire Safety NOC from State Fire Directorate', required: true, acceptedFormats: 'PDF, JPG' },
-  { id: 'land', type: 'Land Title & Ownership Deed', description: 'Registered deed or 7/12 extract', required: true, acceptedFormats: 'PDF, JPG, PNG' },
-  { id: 'naac', type: 'NBA / NAAC Accreditation Certificate', description: 'Current valid accreditation certificate', required: true, acceptedFormats: 'PDF' },
-  { id: 'ter', type: 'TER Processing Fee Receipt', description: 'Official TER payment receipt', required: true, acceptedFormats: 'PDF, JPG' },
+// Pre-packaged test datasets for instantaneous hackathon demonstration
+const SAMPLE_COMPLIANT_BATCH = [
+  {
+    apaarId: '5512-8941-2091',
+    fullName: 'Aditya Ramesh Joshi',
+    dob: '2005-03-18',
+    gender: 'Male',
+    courseName: 'B.Tech Computer Science & Engineering',
+    studentRollNo: 'CS-2026-081',
+    admissionCategory: 'GENERAL',
+    subCategory: 'CAP Round 1',
+    isNri: false,
+    isOci: false,
+    isForeignNational: false,
+  },
+  {
+    apaarId: '7721-3490-6182',
+    fullName: 'Meera Nandakumar',
+    dob: '2005-07-22',
+    gender: 'Female',
+    courseName: 'B.Tech Computer Science & Engineering',
+    studentRollNo: 'CS-2026-082',
+    admissionCategory: 'SUPERNUMERARY',
+    subCategory: 'TFWS (Tuition Fee Waiver)',
+    isNri: false,
+    isOci: false,
+    isForeignNational: false,
+  },
+  {
+    apaarId: '3341-9872-4015',
+    fullName: 'Siddharth Roy',
+    dob: '2005-09-10',
+    gender: 'Male',
+    courseName: 'B.Tech Artificial Intelligence & Data Science',
+    studentRollNo: 'AI-2026-070',
+    admissionCategory: 'GENERAL',
+    subCategory: 'CAP Round 2',
+    isNri: false,
+    isOci: false,
+    isForeignNational: false,
+  },
 ];
 
-const FILE_STATES = { IDLE: 'idle', UPLOADING: 'uploading', DONE: 'done', ERROR: 'error' };
-
-function formatBytes(bytes) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function DocUploadRow({ doc, file, fileState, progress, onFileSelect, onRemove }) {
-  const inputRef = useRef(null);
-
-  return (
-    <div className={`p-5 rounded-xl border-2 transition-all ${
-      fileState === FILE_STATES.DONE
-        ? 'border-emerald-300 bg-emerald-50'
-        : fileState === FILE_STATES.ERROR
-        ? 'border-red-300 bg-red-50'
-        : fileState === FILE_STATES.UPLOADING
-        ? 'border-blue-300 bg-blue-50'
-        : 'border-slate-200 bg-white'
-    }`}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start space-x-3 flex-1 min-w-0">
-          {/* Status Icon */}
-          <div className={`mt-0.5 w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-            fileState === FILE_STATES.DONE ? 'bg-emerald-500' :
-            fileState === FILE_STATES.ERROR ? 'bg-red-500' :
-            fileState === FILE_STATES.UPLOADING ? 'bg-blue-500' :
-            'bg-slate-100'
-          }`}>
-            {fileState === FILE_STATES.DONE ? (
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-              </svg>
-            ) : fileState === FILE_STATES.ERROR ? (
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : fileState === FILE_STATES.UPLOADING ? (
-              <svg className="w-5 h-5 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2 flex-wrap gap-1">
-              <span className="font-semibold text-slate-800 text-sm">{doc.type}</span>
-              {doc.required && (
-                <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">Required</span>
-              )}
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">{doc.description} · Accepts: {doc.acceptedFormats}</p>
-
-            {/* File info */}
-            {file && (
-              <div className="mt-2 flex items-center space-x-2 text-xs">
-                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span className="text-slate-600 font-medium truncate max-w-[180px]">{file.name}</span>
-                <span className="text-slate-400">{formatBytes(file.size)}</span>
-              </div>
-            )}
-
-            {/* Progress bar */}
-            {fileState === FILE_STATES.UPLOADING && (
-              <div className="mt-2">
-                <div className="h-1.5 bg-blue-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <p className="text-[11px] text-blue-600 mt-1">Uploading… {progress}%</p>
-              </div>
-            )}
-            {fileState === FILE_STATES.DONE && (
-              <p className="text-xs text-emerald-600 font-medium mt-1">✓ Uploaded successfully</p>
-            )}
-            {fileState === FILE_STATES.ERROR && (
-              <p className="text-xs text-red-600 font-medium mt-1">Upload failed. Please try again.</p>
-            )}
-          </div>
-        </div>
-
-        {/* Action */}
-        <div className="shrink-0">
-          {fileState === FILE_STATES.DONE ? (
-            <button
-              onClick={() => onRemove(doc.id)}
-              className="text-xs text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer focus:outline-none"
-            >
-              Remove
-            </button>
-          ) : fileState === FILE_STATES.UPLOADING ? null : (
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="text-xs font-semibold px-3.5 py-1.5 rounded-lg bg-[#0c4a2f] hover:bg-[#0a3622] text-white transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              {fileState === FILE_STATES.ERROR ? 'Retry' : 'Choose File'}
-            </button>
-          )}
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onFileSelect(doc.id, f);
-              e.target.value = '';
-            }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
+const SAMPLE_CONFLICTING_BATCH = [
+  // 1. Cross-institution duplicate enrolment conflict with Apex Institute
+  {
+    apaarId: '9821-4567-8910',
+    fullName: 'Aarav Vikram Sharma',
+    dob: '2005-06-14',
+    gender: 'Male',
+    courseName: 'B.Tech Computer Science & Engineering',
+    studentRollNo: 'CS-2026-095',
+    admissionCategory: 'SUPERNUMERARY',
+    subCategory: 'TFWS (Tuition Fee Waiver)',
+    isNri: false,
+    isOci: false,
+    isForeignNational: false,
+  },
+  // 2. Invalid APAAR Checksum (Not 12 digits / Failed Verhoeff)
+  {
+    apaarId: '9999-0000-INVALID',
+    fullName: 'Rajesh K. Gupta',
+    dob: '2005-11-05',
+    gender: 'Male',
+    courseName: 'B.Tech Artificial Intelligence & Data Science',
+    studentRollNo: 'AI-2026-075',
+    admissionCategory: 'GENERAL',
+    subCategory: 'Open Merit',
+    isNri: false,
+    isOci: false,
+    isForeignNational: false,
+  },
+  // 3. Intra-batch duplicate test (repeating same APAAR)
+  {
+    apaarId: '9821-4567-8910',
+    fullName: 'Aarav Vikram Sharma (Duplicate Filing)',
+    dob: '2005-06-14',
+    gender: 'Male',
+    courseName: 'B.Tech Computer Science & Engineering',
+    studentRollNo: 'CS-2026-096',
+    admissionCategory: 'GENERAL',
+    subCategory: 'Management Quota',
+    isNri: false,
+    isOci: false,
+    isForeignNational: false,
+  },
+  // 4. Legitimate Foreign National student
+  {
+    apaarId: '8892-1049-3829',
+    fullName: 'Tariq Mansoor Al-Farsi',
+    dob: '2004-12-01',
+    gender: 'Male',
+    courseName: 'B.Tech Computer Science & Engineering',
+    studentRollNo: 'CS-2026-FN-02',
+    admissionCategory: 'FN',
+    subCategory: 'Foreign National (Oman)',
+    isNri: false,
+    isOci: false,
+    isForeignNational: true,
+  },
+];
 
 export default function UploadDocuments() {
   const navigate = useNavigate();
-  const [uploads, setUploads] = useState(() =>
-    Object.fromEntries(REQUIRED_DOCS.map((d) => [d.id, { file: null, state: FILE_STATES.IDLE, progress: 0 }]))
-  );
+  const fileInputRef = useRef(null);
 
-  const handleFileSelect = (docId, file) => {
-    setUploads((prev) => ({
-      ...prev,
-      [docId]: { file, state: FILE_STATES.UPLOADING, progress: 0 },
-    }));
+  const [batchData, setBatchData] = useState([]);
+  const [validationResult, setValidationResult] = useState(null);
+  const [validating, setValidating] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [consentAcknowledged, setConsentAcknowledged] = useState(false);
+  const [activeFileName, setActiveFileName] = useState('');
 
-    // Simulate upload progress
-    let prog = 0;
-    const interval = setInterval(() => {
-      prog += Math.floor(Math.random() * 20) + 10;
-      if (prog >= 100) {
-        prog = 100;
-        clearInterval(interval);
-        setUploads((prev) => ({
-          ...prev,
-          [docId]: { ...prev[docId], state: FILE_STATES.DONE, progress: 100 },
-        }));
-      } else {
-        setUploads((prev) => ({
-          ...prev,
-          [docId]: { ...prev[docId], progress: prog },
-        }));
+  const runValidation = async (rows, fileName = 'student_records_batch.csv') => {
+    setActiveFileName(fileName);
+    setValidating(true);
+    try {
+      const res = await validateStudentBatch('INST-001', rows);
+      setValidationResult(res);
+      setBatchData(res.results);
+    } catch (err) {
+      console.error('Validation error', err);
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target.result;
+      const lines = text.split('\n').filter((l) => l.trim().length > 0);
+      // Skip header if present
+      const rows = [];
+      const startIdx = lines[0].toLowerCase().includes('apaar') ? 1 : 0;
+
+      for (let i = startIdx; i < lines.length; i++) {
+        const parts = lines[i].split(',').map((p) => p.trim());
+        if (parts.length >= 2) {
+          rows.push({
+            apaarId: parts[0] || '',
+            fullName: parts[1] || 'Enrolled Student',
+            dob: parts[2] || '2005-01-01',
+            gender: parts[3] || 'Male',
+            courseName: parts[4] || 'B.Tech Computer Science & Engineering',
+            studentRollNo: parts[5] || `ROLL-${i}`,
+            admissionCategory: parts[6] || 'GENERAL',
+            subCategory: parts[7] || 'Open Merit',
+            isNri: parts[6] === 'NRI',
+            isOci: parts[6] === 'OCI',
+            isForeignNational: parts[6] === 'FN',
+          });
+        }
       }
-    }, 250);
+
+      if (rows.length > 0) {
+        runValidation(rows, file.name);
+      } else {
+        // Fallback to sample if empty CSV
+        runValidation(SAMPLE_COMPLIANT_BATCH, file.name);
+      }
+    };
+    reader.readAsText(file);
   };
 
-  const handleRemove = (docId) => {
-    setUploads((prev) => ({
-      ...prev,
-      [docId]: { file: null, state: FILE_STATES.IDLE, progress: 0 },
-    }));
+  const handleSubmit = async () => {
+    if (!consentAcknowledged || !validationResult) return;
+    setSubmitting(true);
+    try {
+      await submitStudentBatch('INST-001', validationResult.results);
+      navigate('/college/processing', {
+        state: {
+          submittedCount: validationResult.results.length,
+          flaggedCount: validationResult.flaggedCount,
+          fileName: activeFileName,
+        },
+      });
+    } catch (err) {
+      console.error('Submission failed', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const doneCount = Object.values(uploads).filter((u) => u.state === FILE_STATES.DONE).length;
-  const allRequired = REQUIRED_DOCS.filter((d) => d.required);
-  const allRequiredDone = allRequired.every((d) => uploads[d.id]?.state === FILE_STATES.DONE);
+  const downloadSampleCsv = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      'APAAR_ID,Full_Name,DOB,Gender,Course_Name,Roll_No,Category,Sub_Category\n' +
+      '9821-4567-8910,Aarav Vikram Sharma,2005-06-14,Male,B.Tech Computer Science,CS-2026-042,SUPERNUMERARY,TFWS\n' +
+      '8721-3948-5012,Fatima Al-Zahra,2004-09-15,Female,B.Tech Computer Science,CS-2026-FN-01,FN,Foreign National\n' +
+      '6382-9104-5821,Neil Rajesh Merchant,2005-04-12,Male,B.Tech Information Tech,IT-2026-NRI-02,NRI,NRI Ward\n' +
+      '5512-8941-2091,Aditya Ramesh Joshi,2005-03-18,Male,B.Tech Computer Science,CS-2026-081,GENERAL,CAP Round 1\n';
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'AICTE_APAAR_Batch_Template.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <div className="flex items-start justify-between flex-wrap gap-3">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Upload Documents</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Upload all required statutory documents. Each file will be queued for AI-assisted classification and validation.
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Upload Student Admission Batch</h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Secure ingestion of post-admission student records using 12-digit <strong>APAAR ID</strong> as the national academic identifier.
             </p>
           </div>
-          {/* Progress summary */}
-          <div className="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[#0c4a2f]">{doneCount}</div>
-              <div className="text-[11px] text-slate-500">of {REQUIRED_DOCS.length}</div>
-            </div>
-            <div className="w-px h-8 bg-slate-200" />
-            <div className="text-xs text-slate-600">
-              <div className="font-semibold">Documents Uploaded</div>
-              <div className="text-slate-400">{REQUIRED_DOCS.length - doneCount} remaining</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Overall progress bar */}
-        <div className="mt-4">
-          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#0c4a2f] rounded-full transition-all duration-500"
-              style={{ width: `${(doneCount / REQUIRED_DOCS.length) * 100}%` }}
-            />
-          </div>
-          <p className="text-xs text-slate-500 mt-1">{Math.round((doneCount / REQUIRED_DOCS.length) * 100)}% complete</p>
-        </div>
-      </div>
-
-      {/* Document Upload List */}
-      <div className="space-y-3">
-        {REQUIRED_DOCS.map((doc) => (
-          <DocUploadRow
-            key={doc.id}
-            doc={doc}
-            file={uploads[doc.id]?.file}
-            fileState={uploads[doc.id]?.state}
-            progress={uploads[doc.id]?.progress}
-            onFileSelect={handleFileSelect}
-            onRemove={handleRemove}
-          />
-        ))}
-      </div>
-
-      {/* Submit Section */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        {!allRequiredDone && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 flex items-start space-x-2 text-xs text-amber-800">
-            <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <button
+            onClick={downloadSampleCsv}
+            className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            <span>
-              Upload all <strong>{allRequired.length} required documents</strong> to proceed. 
-              {allRequired.length - allRequired.filter((d) => uploads[d.id]?.state === FILE_STATES.DONE).length} still missing.
+            Download AICTE CSV Template
+          </button>
+        </div>
+      </div>
+
+      {/* Demo Quick-Load Injectors */}
+      <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-5 shadow-xs">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">
+              Demo Test Batches (Instant Seed)
             </span>
           </div>
-        )}
-        <div className="flex items-center justify-between flex-wrap gap-3">
+          <span className="text-[11px] text-emerald-700">Pre-loaded scenarios illustrating PS validation criteria</span>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => navigate('/college/application')}
-            className="text-sm font-medium text-slate-600 hover:text-slate-800 flex items-center space-x-1 cursor-pointer focus:outline-none"
+            onClick={() => runValidation(SAMPLE_COMPLIANT_BATCH, 'clean_admissions_batch.csv')}
+            className="px-4 py-2 rounded-xl bg-white hover:bg-emerald-100/50 text-emerald-800 text-xs font-semibold border border-emerald-300 shadow-xs transition-all flex items-center gap-2 cursor-pointer"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span>Back to Category</span>
+            <span>✓ Load Compliant Batch (3 Valid Students)</span>
           </button>
+
           <button
-            onClick={() => navigate('/college/processing')}
-            disabled={!allRequiredDone}
-            className="py-3 px-8 rounded-lg bg-[#0c4a2f] hover:bg-[#0a3622] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex items-center space-x-2"
+            onClick={() => runValidation(SAMPLE_CONFLICTING_BATCH, 'conflicts_edge_cases.csv')}
+            className="px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold border border-amber-300 shadow-xs transition-all flex items-center gap-2 cursor-pointer"
           >
-            <span>Submit for AI Validation</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            <span>⚠️ Load Conflicting Batch (Duplicate Cross-Enrolment & Invalid APAAR)</span>
           </button>
         </div>
       </div>
+
+      {/* Drag & Drop Upload Zone */}
+      <div
+        onClick={() => fileInputRef.current?.click()}
+        className="bg-white border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-8 text-center transition-all cursor-pointer group"
+      >
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          accept=".csv,.txt"
+          className="hidden"
+        />
+        <div className="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform mb-3">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+        </div>
+        <div className="font-semibold text-slate-800 text-sm">
+          {activeFileName ? (
+            <span className="text-emerald-700 font-bold">Selected: {activeFileName}</span>
+          ) : (
+            'Click to select or drag and drop student batch file (CSV / Excel)'
+          )}
+        </div>
+        <p className="text-xs text-slate-400 mt-1">
+          Supports CSV formatted according to AICTE APAAR Data Exchange Specification (v2.4)
+        </p>
+      </div>
+
+      {/* Validation Pipeline In-Flight Indicator */}
+      {validating && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3">
+          <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-emerald-600 mx-auto"></div>
+          <div className="text-sm font-bold text-slate-800">Running AICTE Automated Validation Engine...</div>
+          <div className="text-xs text-slate-500">
+            Checking Verhoeff checksums · Scanning national cross-institution registry · Verifying intake capacity
+          </div>
+        </div>
+      )}
+
+      {/* Pre-submission Validation Results Table */}
+      {validationResult && !validating && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-4">
+          <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
+            <div>
+              <div className="font-bold text-base text-slate-800">
+                Automated Validation Summary ({validationResult.totalSubmitted} Records Parsed)
+              </div>
+              <div className="text-xs text-slate-500">
+                File: <span className="font-mono text-slate-700 font-semibold">{activeFileName}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                ✓ {validationResult.validCount} Valid Records
+              </span>
+              {validationResult.flaggedCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300 animate-pulse">
+                  ⚠️ {validationResult.flaggedCount} Anomalies Flagged
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Records Table */}
+          <div className="overflow-x-auto px-4 pb-2">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500 font-semibold">
+                  <th className="py-2.5 px-3">#</th>
+                  <th className="py-2.5 px-3">APAAR ID</th>
+                  <th className="py-2.5 px-3">Student Name</th>
+                  <th className="py-2.5 px-3">Program & Category</th>
+                  <th className="py-2.5 px-3">Validation Finding</th>
+                  <th className="py-2.5 px-3">Resolution Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {validationResult.results.map((row, index) => {
+                  const hasIssues = row.issues.length > 0;
+                  return (
+                    <tr key={index} className={hasIssues ? 'bg-red-50/40' : 'hover:bg-slate-50/60'}>
+                      <td className="py-3 px-3 font-mono text-slate-400">{index + 1}</td>
+                      <td className="py-3 px-3 font-mono font-bold text-slate-800">{row.apaarId}</td>
+                      <td className="py-3 px-3">
+                        <div className="font-semibold text-slate-800">{row.fullName}</div>
+                        <div className="text-[11px] text-slate-400">Roll: {row.studentRollNo}</div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="text-slate-800">{row.courseName}</div>
+                        <span className="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                          {row.admissionCategory} ({row.subCategory})
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 max-w-xs">
+                        {hasIssues ? (
+                          <div className="space-y-1">
+                            {row.issues.map((iss, i) => (
+                              <div key={i} className="text-[11px] text-red-700 font-medium flex items-start gap-1">
+                                <span className="text-red-500 font-bold">•</span>
+                                <span>{iss.message}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-emerald-700 font-medium text-xs">
+                            ✓ APAAR Verified with DigiLocker / ABC Depository
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3">
+                        {hasIssues ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-800">
+                            Flagged for Review
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                            Ready to Ingest
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Consent Checkbox & Final Submission */}
+          <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-4">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentAcknowledged}
+                onChange={(e) => setConsentAcknowledged(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+              />
+              <span className="text-xs text-slate-600 leading-relaxed">
+                <strong>Statutory Consent Declaration (Section 8 Compliance):</strong> I hereby certify that authentic student consent has been acquired in compliance with the Digital Personal Data Protection Act (DPDP) and AICTE APAAR guidelines. I confirm that all submitted intake quotas and supernumerary claims represent officially ratified admissions for AY 2026-27.
+              </span>
+            </label>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setValidationResult(null);
+                  setActiveFileName('');
+                }}
+                className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer"
+              >
+                Clear Batch
+              </button>
+
+              <button
+                onClick={handleSubmit}
+                disabled={!consentAcknowledged || submitting}
+                className={`px-5 py-2.5 rounded-xl text-white font-semibold text-xs shadow-sm flex items-center gap-2 cursor-pointer transition-all ${
+                  consentAcknowledged && !submitting
+                    ? 'bg-emerald-700 hover:bg-emerald-800'
+                    : 'bg-slate-300 cursor-not-allowed text-slate-500'
+                }`}
+              >
+                {submitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white"></div>
+                    <span>Ingesting into AICTE Central Repository...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Validated Batch to AICTE Repository</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -95,6 +95,15 @@ export const AUDIT_ACTION = {
   VALIDATION_COMPLETE: 'VALIDATION_COMPLETE',
   DECISION_SUBMITTED: 'DECISION_SUBMITTED',
   APPLICATION_STATUS_UPDATED: 'APPLICATION_STATUS_UPDATED',
+  // APAAR Domain Audit Actions
+  APAAR_VALIDATED: 'APAAR_VALIDATED',
+  DUPLICATE_ENROLMENT_FLAGGED: 'DUPLICATE_ENROLMENT_FLAGGED',
+  INTAKE_BREACH_DETECTED: 'INTAKE_BREACH_DETECTED',
+  STUDENT_BATCH_UPLOADED: 'STUDENT_BATCH_UPLOADED',
+  STAKEHOLDER_VERIFICATION: 'STAKEHOLDER_VERIFICATION',
+  SHOW_CAUSE_ISSUED: 'SHOW_CAUSE_ISSUED',
+  CONSENT_RECORDED: 'CONSENT_RECORDED',
+  CERTIFICATE_GENERATED: 'CERTIFICATE_GENERATED',
 };
 
 export const AUDIT_ACTION_LABELS = {
@@ -108,6 +117,15 @@ export const AUDIT_ACTION_LABELS = {
   [AUDIT_ACTION.VALIDATION_COMPLETE]: 'Validation Complete',
   [AUDIT_ACTION.DECISION_SUBMITTED]: 'Decision Submitted',
   [AUDIT_ACTION.APPLICATION_STATUS_UPDATED]: 'Status Transitioned',
+  // APAAR Domain Labels
+  [AUDIT_ACTION.APAAR_VALIDATED]: 'APAAR Registry Verification',
+  [AUDIT_ACTION.DUPLICATE_ENROLMENT_FLAGGED]: 'Duplicate Enrolment Flagged',
+  [AUDIT_ACTION.INTAKE_BREACH_DETECTED]: 'Intake Quota Breach',
+  [AUDIT_ACTION.STUDENT_BATCH_UPLOADED]: 'Student Batch Ingested',
+  [AUDIT_ACTION.STAKEHOLDER_VERIFICATION]: 'Stakeholder Identity Query',
+  [AUDIT_ACTION.SHOW_CAUSE_ISSUED]: 'Regulatory Notice Issued',
+  [AUDIT_ACTION.CONSENT_RECORDED]: 'DPDP Student Consent Archived',
+  [AUDIT_ACTION.CERTIFICATE_GENERATED]: 'Verifiable Certificate Generated',
 };
 
 // Standard disclaimers & UI labels
@@ -123,11 +141,66 @@ export const ROLE = {
   OFFICER: 'officer',
   COLLEGE: 'college',
   ADMIN: 'admin',
+  VERIFIER: 'verifier',
 };
 
 export const ROLE_LABELS = {
-  [ROLE.OFFICER]: 'Scrutiny Officer',
-  [ROLE.COLLEGE]: 'College Applicant',
-  [ROLE.ADMIN]: 'Admin',
+  [ROLE.OFFICER]: 'AICTE Scrutiny Officer',
+  [ROLE.COLLEGE]: 'Institution Registrar / College',
+  [ROLE.ADMIN]: 'AICTE Administrator',
+  [ROLE.VERIFIER]: 'Authorized Stakeholder / Verifier',
+};
+
+// Cross-Institution Link & Anomaly Types for LinkGraph
+export const LINK_TYPE = {
+  DUPLICATE_IDENTIFIER: 'DUPLICATE_IDENTIFIER',
+  TEMPORAL_CONFLICT: 'TEMPORAL_CONFLICT',
+  SHARED_TRUST: 'SHARED_TRUST',
+  CROSS_ENROLMENT: 'CROSS_ENROLMENT',
+  INTAKE_BREACH: 'INTAKE_BREACH',
+};
+
+export const LINK_TYPE_LABELS = {
+  [LINK_TYPE.DUPLICATE_IDENTIFIER]: 'Duplicate APAAR Identifier',
+  [LINK_TYPE.TEMPORAL_CONFLICT]: 'Concurrent Admission Overlap',
+  [LINK_TYPE.SHARED_TRUST]: 'Shared Academic Depository',
+  [LINK_TYPE.CROSS_ENROLMENT]: 'Cross-Institution Dual Enrolment',
+  [LINK_TYPE.INTAKE_BREACH]: 'Approved Intake Exceeded',
+};
+
+export const RULE_CROSS_INSTITUTION_LINK = 'CROSS_INSTITUTION_LINK';
+
+// APAAR Specific Enrolment and Verification Statuses
+export const APAAR_STATUS = {
+  VERIFIED: 'VERIFIED',
+  DUPLICATE_CROSS_INSTITUTE: 'DUPLICATE_CROSS_INSTITUTE',
+  INTAKE_QUOTA_BREACH: 'INTAKE_QUOTA_BREACH',
+  INVALID_APAAR: 'INVALID_APAAR',
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
+};
+
+export const APAAR_STATUS_LABELS = {
+  [APAAR_STATUS.VERIFIED]: 'Verified Academic ID',
+  [APAAR_STATUS.DUPLICATE_CROSS_INSTITUTE]: 'Cross-Institute Duplicate',
+  [APAAR_STATUS.INTAKE_QUOTA_BREACH]: 'Approved Intake Exceeded',
+  [APAAR_STATUS.INVALID_APAAR]: 'Invalid APAAR Checksum',
+  [APAAR_STATUS.PENDING_VERIFICATION]: 'Pending Verification',
+};
+
+// Admission Quota Categories
+export const ADMISSION_CATEGORIES = {
+  GENERAL: 'GENERAL',
+  SUPERNUMERARY: 'SUPERNUMERARY',
+  NRI: 'NRI',
+  OCI: 'OCI',
+  FN: 'FN',
+};
+
+export const ADMISSION_CATEGORY_LABELS = {
+  [ADMISSION_CATEGORIES.GENERAL]: 'General / Open Merit',
+  [ADMISSION_CATEGORIES.SUPERNUMERARY]: 'Supernumerary (TFWS / EWS / PWD)',
+  [ADMISSION_CATEGORIES.NRI]: 'Non-Resident Indian (NRI)',
+  [ADMISSION_CATEGORIES.OCI]: 'Overseas Citizen of India (OCI)',
+  [ADMISSION_CATEGORIES.FN]: 'Foreign National (FN)',
 };
 
