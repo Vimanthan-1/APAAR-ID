@@ -1,19 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import DemoRibbon from './DemoRibbon';
 import ConfirmDialog from './ConfirmDialog';
 import { resetDemo } from '../api';
 import { useAppStore } from '../store/useAppStore';
-import { AUDIT_ACTOR, DISCLAIMER_ADVISORY } from '../constants';
-
-// Logout action for Switch Portal
+import { AUDIT_ACTOR } from '../constants';
 
 const isDevToolsEnabled = import.meta.env.VITE_DEV_TOOLS === 'true';
+
+const NOTIFICATIONS = [
+  {
+    id: 'notif-1',
+    title: 'Cross-Enrolment Conflict Detected',
+    desc: 'APAAR 9821-4567-8910 enrolled concurrently at Demo Tech & Apex Institute.',
+    time: '2 mins ago',
+    type: 'critical',
+    link: '/officer/graph',
+  },
+  {
+    id: 'notif-2',
+    title: 'Intake Quota Cap Exceeded',
+    desc: 'B.Tech CSE at Demo Institute enrolled 72/60 approved seats (+12 breach).',
+    time: '14 mins ago',
+    type: 'warning',
+    link: '/officer/dashboard',
+  },
+  {
+    id: 'notif-3',
+    title: 'Foreign National Quota Ratified',
+    desc: 'Tariq Mansoor Al-Farsi verified under AICTE FN supernumerary scheme.',
+    time: '1 hour ago',
+    type: 'success',
+    link: '/officer/audit',
+  },
+];
 
 export default function Layout() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef(null);
+
   const location = useLocation();
   const navigate = useNavigate();
   const resetStore = useAppStore((state) => state.resetStore);
@@ -24,7 +51,18 @@ export default function Layout() {
     navigate('/');
   };
 
-  // Keyboard shortcut: Alt+Shift+D (replaces conflicting shortcuts)
+  // Close notifications on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Keyboard shortcut: Alt+Shift+D
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.altKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
@@ -44,11 +82,8 @@ export default function Layout() {
       setResetMessage('Demo data restored to initial state');
       setTimeout(() => setResetMessage(null), 3500);
 
-      // Trigger soft refresh across mounted subscribers
       window.dispatchEvent(new CustomEvent('aicte:reset-demo'));
       setShowResetConfirm(false);
-
-      // Return to dashboard after reset
       navigate('/officer/dashboard');
     } catch (err) {
       console.error('Failed to reset demo:', err);
@@ -61,7 +96,7 @@ export default function Layout() {
     {
       to: '/officer/dashboard',
       label: 'Intake Surveillance',
-      sublabel: 'National Admission Overview',
+      sublabel: 'National Admissions Overview',
       icon: (
         <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -71,9 +106,9 @@ export default function Layout() {
     {
       to: '/officer/graph',
       label: 'Cross-Enrolment Graph',
-      sublabel: 'Duplicate Detection',
-      badge: '1 Critical',
-      badgeColor: 'bg-red-500 text-white animate-pulse',
+      sublabel: 'Multi-Institutional Network',
+      badge: '1 Alert',
+      badgeColor: 'bg-red-500 text-white',
       icon: (
         <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -83,7 +118,7 @@ export default function Layout() {
     {
       to: '/officer/audit',
       label: 'National Audit Trail',
-      sublabel: 'Immutable Log',
+      sublabel: 'Immutable Compliance Ledger',
       icon: (
         <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -92,12 +127,11 @@ export default function Layout() {
     },
   ];
 
-  // Optional dev-only inspection navigation
   if (isDevToolsEnabled) {
     navItems.push({
       to: '/officer/_components',
       label: 'UI Components',
-      sublabel: 'Visual Check (Dev)',
+      sublabel: 'Design System Check',
       icon: (
         <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -106,71 +140,139 @@ export default function Layout() {
     });
   }
 
+  // Get active breadcrumb name
+  const currentNav = navItems.find((n) => location.pathname.startsWith(n.to)) || {
+    label: location.pathname.includes('/applications') ? 'Application Scrutiny Dossier' : 'Surveillance Workspace',
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#F4F6F9] text-slate-800 antialiased font-sans">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 antialiased font-sans">
       {/* Top Sovereign Header Bar */}
       <header className="bg-[#0A192F] text-white border-b border-slate-800 shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Brand & Portal Name with Favicon Shield Logo */}
+          {/* TRACE Logo & Brand */}
           <div className="flex items-center space-x-3.5">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 32 32"
-              fill="none"
-              className="w-9 h-9 shrink-0 rounded-lg shadow-sm"
-              aria-label="AICTE Emblem"
-            >
-              <rect width="32" height="32" rx="8" fill="#142642" stroke="#1F6FEB" strokeWidth="1" />
-              <path
-                d="M16 4L6 9V17C6 23.08 10.27 28.74 16 30C21.73 28.74 26 23.08 26 17V9L16 4Z"
-                fill="#1F6FEB"
-                fillOpacity="0.35"
-                stroke="#3B82F6"
+            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-400/40 flex items-center justify-center shrink-0 shadow-sm">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
                 strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11 16L14.5 19.5L21 13"
-                stroke="#FBBF24"
-                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-              />
-            </svg>
+                className="w-5 h-5 text-blue-400"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
-                  AICTE Central Surveillance Portal
+                <span className="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
+                  TRACE
                 </span>
-                <span className="hidden lg:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                  APAAR Identity Registry
+                <span className="text-slate-500 font-normal">|</span>
+                <span className="text-sm font-semibold text-slate-200 hidden sm:inline">
+                  AICTE Central Surveillance
+                </span>
+                <span className="hidden lg:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-950 text-blue-300 border border-blue-800">
+                  SIH26263
                 </span>
               </div>
-              <div className="text-xs text-slate-400">
-                Ministry of Education · Student Admission Monitoring &amp; Verification
+              <div className="text-[11px] text-slate-400">
+                Regulation Bureau · Smart Automation
               </div>
             </div>
           </div>
 
-          {/* Reset Demo control & Role indicator */}
-          <div className="flex items-center space-x-3 sm:space-x-4">
+          {/* Right Controls: Notifications, Reset, Role & Switch */}
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
             {resetMessage && (
-              <span className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold bg-emerald-800 text-emerald-100 px-3 py-1 rounded-full border border-emerald-600 shadow-xs animate-fade-in">
+              <span className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold bg-emerald-800 text-emerald-100 px-3 py-1 rounded-full border border-emerald-600 shadow-xs animate-slide-up">
                 <span>✓</span>
                 <span>{resetMessage}</span>
               </span>
             )}
 
-            {/* Switch Portal Button */}
+            {/* Notification Bell Dropdown */}
+            <div className="relative" ref={notificationRef}>
+              <button
+                type="button"
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors relative cursor-pointer"
+                title="View real-time compliance alerts"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center border border-[#0A192F]">
+                  3
+                </span>
+              </button>
+
+              {/* Notification Flyout Panel */}
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-50 animate-scale-in text-slate-800">
+                  <div className="p-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-red-400"></span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                        Live Compliance Alerts (3)
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-400">TRACE Watchdog</span>
+                  </div>
+                  <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+                    {NOTIFICATIONS.map((n) => (
+                      <div
+                        key={n.id}
+                        onClick={() => {
+                          setShowNotifications(false);
+                          navigate(n.link);
+                        }}
+                        className="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className={`text-xs font-bold leading-snug ${
+                            n.type === 'critical' ? 'text-red-700' : n.type === 'warning' ? 'text-amber-800' : 'text-emerald-700'
+                          }`}>
+                            {n.title}
+                          </span>
+                          <span className="text-[10px] text-slate-400 shrink-0 font-mono">{n.time}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                          {n.desc}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNotifications(false);
+                        navigate('/officer/audit');
+                      }}
+                      className="text-xs font-bold text-blue-700 hover:text-blue-800 cursor-pointer"
+                    >
+                      View Immutable Audit Ledger →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Switch Portal */}
             <button
               type="button"
               onClick={handleSwitchPortal}
-              className="text-xs sm:text-sm px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 transition-colors flex items-center space-x-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1F6FEB]"
+              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 transition-colors flex items-center space-x-1.5 cursor-pointer"
             >
-              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
-              <span className="font-medium hidden sm:inline">Switch Portal</span>
+              <span className="font-semibold hidden sm:inline">Switch Portal</span>
             </button>
 
             {/* Reset Demo Button */}
@@ -178,34 +280,52 @@ export default function Layout() {
               type="button"
               onClick={() => setShowResetConfirm(true)}
               disabled={resetting}
-              className="text-xs sm:text-sm px-3.5 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 transition-colors flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#1F6FEB]"
-              title="Reset in-memory mock data to seed state (Alt+Shift+D)"
+              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 transition-colors flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+              title="Reset in-memory data (Alt+Shift+D)"
             >
-              <svg className={`w-4 h-4 text-slate-400 ${resetting ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-3.5 h-3.5 text-slate-400 ${resetting ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span className="font-medium">{resetting ? 'Resetting...' : 'Reset demo'}</span>
+              <span className="font-semibold">{resetting ? 'Resetting...' : 'Reset'}</span>
             </button>
 
-            {/* Role indicator (AGENTS.md Section 5.6) */}
-            <div className="flex items-center space-x-2.5 pl-3 border-l border-slate-700">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0 ring-4 ring-emerald-950"></span>
-              <div className="leading-tight">
-                <div className="text-xs sm:text-sm font-semibold text-slate-100">Officer Portal</div>
-                <div className="text-[11px] font-mono text-slate-400">{AUDIT_ACTOR.OFFICER}</div>
+            {/* Officer Profile Badge */}
+            <div className="flex items-center space-x-2.5 pl-2.5 border-l border-slate-700">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-xs ring-2 ring-blue-500/30">
+                AK
+              </div>
+              <div className="leading-tight hidden md:block">
+                <div className="text-xs font-bold text-slate-100">Dr. A. K. Sharma</div>
+                <div className="text-[10px] font-mono text-slate-400">{AUDIT_ACTOR.OFFICER} · Central Bureau</div>
               </div>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Contextual Sub-Bar / Breadcrumbs */}
+      <div className="bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center space-x-2">
+            <span className="font-semibold text-slate-700">AICTE Regulatory Surveillance</span>
+            <span>/</span>
+            <span className="text-blue-700 font-bold">{currentNav.label}</span>
+          </div>
+          <div className="hidden sm:flex items-center space-x-3 text-[11px] font-mono text-slate-400">
+            <span>Cycle: AY 2026-27</span>
+            <span>•</span>
+            <span className="text-emerald-700 font-semibold">● Graph Scrutiny Engine Online</span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Workspace: Sidebar + Content */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
         {/* Navigation Sidebar */}
         <aside className="w-full md:w-64 shrink-0">
-          <nav aria-label="Portal Navigation" className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-3 space-y-1.5 sticky top-24">
-            <div className="px-3 py-2 text-xs font-semibold text-slate-500">
-              Scrutiny Workflow
+          <nav aria-label="Portal Navigation" className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-3 space-y-1.5 sticky top-24">
+            <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Surveillance Suite
             </div>
             {navItems.map((item) => (
               <NavLink
@@ -214,7 +334,7 @@ export default function Layout() {
                 className={({ isActive }) =>
                   `flex items-center px-3.5 py-3 rounded-xl text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
                     isActive || (item.to.startsWith('/officer/applications') && location.pathname.startsWith('/officer/applications'))
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-[#0A192F] text-white shadow-sm ring-1 ring-blue-500/30'
                       : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`
                 }
@@ -223,7 +343,7 @@ export default function Layout() {
                 <div className="leading-tight flex-1">
                   <div>{item.label}</div>
                   {item.sublabel && (
-                    <div className="text-[11px] opacity-85 font-normal">{item.sublabel}</div>
+                    <div className="text-[11px] opacity-80 font-normal">{item.sublabel}</div>
                   )}
                 </div>
                 {item.badge && (
@@ -237,7 +357,7 @@ export default function Layout() {
             <div className="pt-4 mt-4 border-t border-slate-100 px-3">
               <div className="text-xs text-slate-600 space-y-1.5">
                 <div className="font-semibold text-slate-800">Demonstration Reset:</div>
-                <div className="font-mono text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md inline-block border border-slate-200">
+                <div className="font-mono text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg inline-block border border-slate-200">
                   Alt + Shift + D
                 </div>
               </div>
@@ -266,10 +386,10 @@ export default function Layout() {
           <p>
             This action will restore all applications, synthetic documents, scrutiny findings, and audit trails back to their initial seed state.
           </p>
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900 flex items-start space-x-2">
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900 flex items-start space-x-2">
             <span className="text-amber-600 font-bold text-base leading-none">⚠</span>
             <span>
-              Any officer decisions submitted during this demonstration session will be reverted.
+              Any regulatory decisions submitted during this demonstration session will be reverted to default.
             </span>
           </div>
         </div>
@@ -279,10 +399,10 @@ export default function Layout() {
       <footer className="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            AICTE APAAR Student Data Management &amp; Verification System · Problem Statement SIH26261
+            <strong>TRACE</strong> · AICTE APAAR Student Data Management &amp; Verification Platform (PS 26263)
           </div>
           <div className="text-slate-500 font-mono text-xs">
-            Central Regulatory Surveillance
+            Regulation Bureau · Smart Automation · DPDP Act Compliant
           </div>
         </div>
       </footer>

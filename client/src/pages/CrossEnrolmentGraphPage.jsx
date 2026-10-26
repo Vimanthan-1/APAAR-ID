@@ -193,7 +193,7 @@ export default function CrossEnrolmentGraphPage() {
 
         {/* Embedded LinkGraph Component */}
         <div className="flex-1 w-full h-full relative">
-          <LinkGraph appId="APP-001" />
+          <LinkGraph appId={selectedCase} />
         </div>
       </div>
     </div>

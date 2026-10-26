@@ -1,6 +1,7 @@
 /**
- * Authoritative constants and status vocabulary for AICTE Application Validation Platform (SIH26261).
- * Follows AGENTS.md sections 3, 6, and 7 strictly.
+ * Authoritative constants and status vocabulary for AICTE APAAR Student Data Platform (SIH26263).
+ * Problem Statement 26263: Development of an APAAR ID-Based Student Data Management and Verification Platform.
+ * Organization: AICTE · Department: Regulation Bureau · Theme: Smart Automation.
  */
 
 // PS status vocabulary (Non-negotiable domain rule #4)

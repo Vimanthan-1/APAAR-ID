@@ -2,7 +2,7 @@ import initialApplications from '../mock/applications.json';
 import initialFindings from '../mock/findings.json';
 import initialAudit from '../mock/audit.json';
 import initialAlerts from '../mock/alerts.json';
-import { INSTITUTIONS_DATA, STUDENT_RECORDS_DATA, APAAR_GRAPH_DATA } from '../mock/apaarData.js';
+import { INSTITUTIONS_DATA, STUDENT_RECORDS_DATA, APAAR_GRAPH_DATA, GRAPH_CASES } from '../mock/apaarData.js';
 import {
   AUDIT_ACTION,
   AUDIT_ACTOR,
@@ -365,8 +365,18 @@ export const mockDb = {
     return found ? clone(found) : null;
   },
 
-  getGraph: (id) => clone(apaarGraph),
-  getApaarGraph: (id) => clone(apaarGraph),
+  getGraph: (id) => {
+    if (id && GRAPH_CASES[id]) {
+      return clone(GRAPH_CASES[id]);
+    }
+    return clone(apaarGraph);
+  },
+  getApaarGraph: (id) => {
+    if (id && GRAPH_CASES[id]) {
+      return clone(GRAPH_CASES[id]);
+    }
+    return clone(apaarGraph);
+  },
 
   /**
    * Automated Student Batch Validation Engine

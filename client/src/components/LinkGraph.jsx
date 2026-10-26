@@ -197,11 +197,15 @@ function CustomGraphNode({ data, selected }) {
           : 'hover:shadow-md'
       } ${selected ? 'ring-3 ring-offset-2 ring-[#1F6FEB]' : ''}`}
     >
-      {/* Handles for edges */}
-      <Handle type="target" position={Position.Left} className="!w-2 !h-2 !bg-slate-400" />
-      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !bg-slate-400" />
+      {/* Handles for edges in all directions */}
       <Handle type="target" position={Position.Top} id="top" className="!w-2 !h-2 !bg-slate-400" />
+      <Handle type="source" position={Position.Top} id="top" className="!w-2 !h-2 !bg-slate-400" />
+      <Handle type="target" position={Position.Bottom} id="bottom" className="!w-2 !h-2 !bg-slate-400" />
       <Handle type="source" position={Position.Bottom} id="bottom" className="!w-2 !h-2 !bg-slate-400" />
+      <Handle type="target" position={Position.Left} id="left" className="!w-2 !h-2 !bg-slate-400" />
+      <Handle type="source" position={Position.Left} id="left" className="!w-2 !h-2 !bg-slate-400" />
+      <Handle type="target" position={Position.Right} id="right" className="!w-2 !h-2 !bg-slate-400" />
+      <Handle type="source" position={Position.Right} id="right" className="!w-2 !h-2 !bg-slate-400" />
 
       {/* Node Header Banner */}
       <div className={`px-3 py-1.5 flex items-center justify-between text-xs font-bold rounded-t-[10px] ${typeConfig.headerBg}`}>
@@ -325,28 +329,34 @@ export default function LinkGraph({ finding, appId }) {
     });
 
     const initialEdges = (rawGraph.edges || []).map((e) => {
-      const isPathEdge = pathSet.has(e.from) && pathSet.has(e.to);
+      const sourceId = e.source || e.from;
+      const targetId = e.target || e.to;
+      const isPathEdge = pathSet.has(sourceId) && pathSet.has(targetId);
+      const strokeColor = e.style?.stroke || (isPathEdge ? '#EF4444' : '#1F6FEB');
 
       return {
         id: e.id,
-        source: e.from,
-        target: e.to,
+        source: sourceId,
+        target: targetId,
+        sourceHandle: e.sourceHandle,
+        targetHandle: e.targetHandle,
+        type: 'smoothstep',
         label: e.label || e.relation?.replace(/_/g, ' '),
-        animated: isPathEdge,
+        animated: e.animated !== undefined ? e.animated : true,
         style: {
-          stroke: isPathEdge ? '#1F6FEB' : '#94A3B8',
-          strokeWidth: isPathEdge ? 2.8 : 1.5,
-          opacity: isPathEdge ? 1 : 0.35,
-          strokeDasharray: isPathEdge ? undefined : '4 4',
+          stroke: strokeColor,
+          strokeWidth: e.style?.strokeWidth || 2.5,
+          strokeDasharray: e.style?.strokeDasharray,
+          opacity: 1,
         },
         labelStyle: {
           fontSize: 10,
-          fontWeight: isPathEdge ? 700 : 500,
-          fill: isPathEdge ? '#0F2A4A' : '#64748B',
+          fontWeight: 700,
+          fill: strokeColor,
         },
         labelBgStyle: {
           fill: '#FFFFFF',
-          fillOpacity: 0.9,
+          fillOpacity: 0.95,
           rx: 4,
           ry: 4,
         },

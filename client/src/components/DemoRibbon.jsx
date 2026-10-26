@@ -10,7 +10,7 @@ export default function DemoRibbon() {
       <span className="inline-block w-2 h-2 rounded-full bg-amber-900 animate-pulse" />
       <span className="uppercase font-semibold tracking-wider">{DEMO_RIBBON_TEXT}</span>
       <span className="hidden sm:inline text-amber-900/80">|</span>
-      <span className="hidden sm:inline text-amber-900/80">AICTE EoA Scrutiny Advisory Layer (SIH26261)</span>
+      <span className="hidden sm:inline text-amber-900/80">AICTE Regulation Bureau · Smart Automation (SIH26263)</span>
     </aside>
   );
 }

@@ -114,6 +114,7 @@ export default function UploadDocuments() {
   const [submitting, setSubmitting] = useState(false);
   const [consentAcknowledged, setConsentAcknowledged] = useState(false);
   const [activeFileName, setActiveFileName] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
 
   const runValidation = async (rows, fileName = 'student_records_batch.csv') => {
     setActiveFileName(fileName);
@@ -137,7 +138,6 @@ export default function UploadDocuments() {
     reader.onload = (event) => {
       const text = event.target.result;
       const lines = text.split('\n').filter((l) => l.trim().length > 0);
-      // Skip header if present
       const rows = [];
       const startIdx = lines[0].toLowerCase().includes('apaar') ? 1 : 0;
 
@@ -163,7 +163,6 @@ export default function UploadDocuments() {
       if (rows.length > 0) {
         runValidation(rows, file.name);
       } else {
-        // Fallback to sample if empty CSV
         runValidation(SAMPLE_COMPLIANT_BATCH, file.name);
       }
     };
@@ -213,48 +212,56 @@ export default function UploadDocuments() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Upload Student Admission Batch</h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Secure ingestion of post-admission student records using 12-digit <strong>APAAR ID</strong> as the national academic identifier.
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                Institutional Data Ingestion
+              </span>
+              <span className="text-xs text-slate-400 font-mono">AICTE v2.4 Spec</span>
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
+              Upload Student Admission Batch
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Secure ingestion of post-admission student records using the 12-digit <strong>APAAR ID</strong> as the single national academic identifier.
             </p>
           </div>
           <button
             onClick={downloadSampleCsv}
-            className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300 transition-colors flex items-center gap-2 cursor-pointer shadow-2xs"
           >
             <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Download AICTE CSV Template
+            <span>Download AICTE CSV Template</span>
           </button>
         </div>
       </div>
 
       {/* Demo Quick-Load Injectors */}
-      <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-5 shadow-xs">
+      <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 shadow-xs">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">
-              Demo Test Batches (Instant Seed)
+            <span className="text-xs font-black uppercase tracking-wider text-emerald-950">
+              Demo Test Batches (Instant Seed Scenarios)
             </span>
           </div>
-          <span className="text-[11px] text-emerald-700">Pre-loaded scenarios illustrating PS validation criteria</span>
+          <span className="text-[11px] text-emerald-700 font-medium">Pre-packaged records illustrating PS 26263 validation criteria</span>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => runValidation(SAMPLE_COMPLIANT_BATCH, 'clean_admissions_batch.csv')}
-            className="px-4 py-2 rounded-xl bg-white hover:bg-emerald-100/50 text-emerald-800 text-xs font-semibold border border-emerald-300 shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-white hover:bg-emerald-100/50 text-emerald-900 text-xs font-bold border border-emerald-300 shadow-2xs transition-all flex items-center gap-2 cursor-pointer hover:scale-102 active:scale-98"
           >
             <span>✓ Load Compliant Batch (3 Valid Students)</span>
           </button>
 
           <button
             onClick={() => runValidation(SAMPLE_CONFLICTING_BATCH, 'conflicts_edge_cases.csv')}
-            className="px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold border border-amber-300 shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold border border-amber-300 shadow-2xs transition-all flex items-center gap-2 cursor-pointer hover:scale-102 active:scale-98"
           >
-            <span>⚠️ Load Conflicting Batch (Duplicate Cross-Enrolment & Invalid APAAR)</span>
+            <span>⚠️ Load Conflicting Batch (Duplicate Cross-Enrolment &amp; Checksum Failure)</span>
           </button>
         </div>
       </div>
@@ -262,7 +269,21 @@ export default function UploadDocuments() {
       {/* Drag & Drop Upload Zone */}
       <div
         onClick={() => fileInputRef.current?.click()}
-        className="bg-white border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-8 text-center transition-all cursor-pointer group"
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          if (e.dataTransfer.files?.[0]) {
+            handleFileUpload({ target: { files: e.dataTransfer.files } });
+          }
+        }}
+        className={`bg-white border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer group ${
+          isDragging ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-300 hover:border-emerald-500 hover:bg-slate-50/50'
+        }`}
       >
         <input
           type="file"
@@ -271,48 +292,48 @@ export default function UploadDocuments() {
           accept=".csv,.txt"
           className="hidden"
         />
-        <div className="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform mb-3">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform mb-3 shadow-xs border border-emerald-200">
           <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
         </div>
-        <div className="font-semibold text-slate-800 text-sm">
+        <div className="font-bold text-slate-900 text-sm">
           {activeFileName ? (
-            <span className="text-emerald-700 font-bold">Selected: {activeFileName}</span>
+            <span className="text-emerald-800 font-extrabold">Selected Batch: {activeFileName}</span>
           ) : (
-            'Click to select or drag and drop student batch file (CSV / Excel)'
+            'Click to select or drag and drop institutional student batch CSV'
           )}
         </div>
-        <p className="text-xs text-slate-400 mt-1">
-          Supports CSV formatted according to AICTE APAAR Data Exchange Specification (v2.4)
+        <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          Complies with AICTE Central APAAR Data Exchange Specification (v2.4) · UTF-8 Comma-Separated
         </p>
       </div>
 
       {/* Validation Pipeline In-Flight Indicator */}
       {validating && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3">
-          <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-emerald-600 mx-auto"></div>
-          <div className="text-sm font-bold text-slate-800">Running AICTE Automated Validation Engine...</div>
-          <div className="text-xs text-slate-500">
-            Checking Verhoeff checksums · Scanning national cross-institution registry · Verifying intake capacity
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3 shadow-sm animate-slide-up">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mx-auto"></div>
+          <div className="text-sm font-black text-slate-900">Running AICTE Pre-Ingestion Scrutiny Engine...</div>
+          <div className="text-xs text-slate-500 max-w-lg mx-auto">
+            Checking Verhoeff modulo-11 checksums · Querying national cross-institution registry · Validating approved branch intake capacities
           </div>
         </div>
       )}
 
       {/* Pre-submission Validation Results Table */}
       {validationResult && !validating && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-4">
-          <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-4 animate-slide-up">
+          <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/80">
             <div>
-              <div className="font-bold text-base text-slate-800">
+              <div className="font-black text-base text-slate-900">
                 Automated Validation Summary ({validationResult.totalSubmitted} Records Parsed)
               </div>
               <div className="text-xs text-slate-500">
-                File: <span className="font-mono text-slate-700 font-semibold">{activeFileName}</span>
+                Batch File: <span className="font-mono text-slate-800 font-bold">{activeFileName}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                 ✓ {validationResult.validCount} Valid Records
               </span>
@@ -328,29 +349,29 @@ export default function UploadDocuments() {
           <div className="overflow-x-auto px-4 pb-2">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500 font-semibold">
-                  <th className="py-2.5 px-3">#</th>
-                  <th className="py-2.5 px-3">APAAR ID</th>
-                  <th className="py-2.5 px-3">Student Name</th>
-                  <th className="py-2.5 px-3">Program & Category</th>
-                  <th className="py-2.5 px-3">Validation Finding</th>
-                  <th className="py-2.5 px-3">Resolution Status</th>
+                <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                  <th className="py-3 px-3">#</th>
+                  <th className="py-3 px-3">APAAR ID</th>
+                  <th className="py-3 px-3">Student Name</th>
+                  <th className="py-3 px-3">Program &amp; Category</th>
+                  <th className="py-3 px-3">Validation Finding</th>
+                  <th className="py-3 px-3">Resolution Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {validationResult.results.map((row, index) => {
                   const hasIssues = row.issues.length > 0;
                   return (
-                    <tr key={index} className={hasIssues ? 'bg-red-50/40' : 'hover:bg-slate-50/60'}>
-                      <td className="py-3 px-3 font-mono text-slate-400">{index + 1}</td>
-                      <td className="py-3 px-3 font-mono font-bold text-slate-800">{row.apaarId}</td>
+                    <tr key={index} className={hasIssues ? 'bg-red-50/50' : 'hover:bg-slate-50/60'}>
+                      <td className="py-3 px-3 font-mono text-slate-400 font-semibold">{index + 1}</td>
+                      <td className="py-3 px-3 font-mono font-bold text-slate-900">{row.apaarId}</td>
                       <td className="py-3 px-3">
-                        <div className="font-semibold text-slate-800">{row.fullName}</div>
-                        <div className="text-[11px] text-slate-400">Roll: {row.studentRollNo}</div>
+                        <div className="font-bold text-slate-900">{row.fullName}</div>
+                        <div className="text-[11px] text-slate-400 font-mono">Roll: {row.studentRollNo}</div>
                       </td>
                       <td className="py-3 px-3">
-                        <div className="text-slate-800">{row.courseName}</div>
-                        <span className="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                        <div className="text-slate-800 font-medium">{row.courseName}</div>
+                        <span className="inline-block mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
                           {row.admissionCategory} ({row.subCategory})
                         </span>
                       </td>
@@ -365,18 +386,19 @@ export default function UploadDocuments() {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-emerald-700 font-medium text-xs">
-                            ✓ APAAR Verified with DigiLocker / ABC Depository
+                          <span className="text-emerald-700 font-bold text-xs flex items-center gap-1">
+                            <span>✓</span>
+                            <span>APAAR Verified with DigiLocker / ABC Depository</span>
                           </span>
                         )}
                       </td>
                       <td className="py-3 px-3">
                         {hasIssues ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-bold bg-red-100 text-red-800 border border-red-200">
                             Flagged for Review
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                             Ready to Ingest
                           </span>
                         )}
@@ -389,13 +411,13 @@ export default function UploadDocuments() {
           </div>
 
           {/* Consent Checkbox & Final Submission */}
-          <div className="p-5 border-t border-slate-200 bg-slate-50/50 space-y-4">
+          <div className="p-5 border-t border-slate-200 bg-slate-50/60 space-y-4">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={consentAcknowledged}
                 onChange={(e) => setConsentAcknowledged(e.target.checked)}
-                className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
               />
               <span className="text-xs text-slate-600 leading-relaxed">
                 <strong>Statutory Consent Declaration (Section 8 Compliance):</strong> I hereby certify that authentic student consent has been acquired in compliance with the Digital Personal Data Protection Act (DPDP) and AICTE APAAR guidelines. I confirm that all submitted intake quotas and supernumerary claims represent officially ratified admissions for AY 2026-27.
@@ -408,7 +430,7 @@ export default function UploadDocuments() {
                   setValidationResult(null);
                   setActiveFileName('');
                 }}
-                className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer"
               >
                 Clear Batch
               </button>
@@ -416,9 +438,9 @@ export default function UploadDocuments() {
               <button
                 onClick={handleSubmit}
                 disabled={!consentAcknowledged || submitting}
-                className={`px-5 py-2.5 rounded-xl text-white font-semibold text-xs shadow-sm flex items-center gap-2 cursor-pointer transition-all ${
+                className={`px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-sm flex items-center gap-2 cursor-pointer transition-all ${
                   consentAcknowledged && !submitting
-                    ? 'bg-emerald-700 hover:bg-emerald-800'
+                    ? 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/20'
                     : 'bg-slate-300 cursor-not-allowed text-slate-500'
                 }`}
               >

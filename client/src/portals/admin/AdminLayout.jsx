@@ -117,8 +117,8 @@ export default function AdminLayout() {
 
       <footer className="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs sm:text-sm text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>AICTE Application Validation & Compliance Verification Platform · SIH26261</div>
-          <div className="text-slate-400 font-mono text-xs">Concept Demo · Advisory Layer</div>
+          <div>AICTE APAAR Student Data Management &amp; Verification System · Problem Statement 26263</div>
+          <div className="text-slate-500 font-mono text-xs">Regulation Bureau · Smart Automation</div>
         </div>
       </footer>
     </div>

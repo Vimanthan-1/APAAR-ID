@@ -102,43 +102,52 @@ export default function AIProcessing() {
       </div>
 
       {/* Step by step timeline */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-        <h2 className="text-base font-bold text-slate-800">Automated Validation Stages</h2>
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-slate-900">Automated Validation Pipeline</h2>
+          <span className="text-xs font-medium text-slate-500 font-mono">5 Stages Executed</span>
+        </div>
 
-        <div className="space-y-3">
+        {/* Scanning Progress Bar */}
+        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 via-emerald-500 to-amber-500 h-1.5 rounded-full w-full animate-scan" />
+        </div>
+
+        <div className="space-y-3 pt-2">
           {steps.map((st, i) => (
             <div
               key={i}
-              className={`p-4 rounded-xl border transition-all ${
+              style={{ animationDelay: `${i * 90}ms` }}
+              className={`p-4 rounded-xl border transition-all animate-slide-up ${
                 st.status === 'ALERT'
-                  ? 'border-red-200 bg-red-50/40'
+                  ? 'border-red-300 bg-red-50/60'
                   : st.status === 'WARNING'
-                  ? 'border-amber-200 bg-amber-50/40'
-                  : 'border-emerald-200 bg-emerald-50/30'
+                  ? 'border-amber-300 bg-amber-50/60'
+                  : 'border-emerald-200 bg-emerald-50/40'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                    className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold shadow-xs ${
                       st.status === 'ALERT'
-                        ? 'bg-red-500 text-white'
+                        ? 'bg-red-600 text-white'
                         : st.status === 'WARNING'
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-emerald-500 text-white'
+                        ? 'bg-amber-600 text-white'
+                        : 'bg-emerald-600 text-white'
                     }`}
                   >
                     {st.status === 'ALERT' ? '!' : st.status === 'WARNING' ? '▲' : '✓'}
                   </div>
 
                   <div>
-                    <div className="font-bold text-sm text-slate-800 flex items-center gap-2">
+                    <div className="font-bold text-sm text-slate-900 flex items-center gap-2">
                       <span>{st.title}</span>
-                      <span className="text-[11px] font-mono text-slate-400">({st.time})</span>
+                      <span className="text-xs font-mono text-slate-500">({st.time})</span>
                     </div>
-                    <div className="text-xs text-slate-600 mt-0.5">{st.desc}</div>
+                    <div className="text-xs text-slate-700 mt-0.5">{st.desc}</div>
                     {st.note && (
-                      <div className="mt-2 text-xs font-semibold text-red-700 bg-red-100/70 px-2.5 py-1 rounded inline-block">
+                      <div className="mt-2 text-xs font-semibold text-red-900 bg-red-100/90 border border-red-200 px-3 py-1.5 rounded-lg inline-block shadow-2xs">
                         ⚠️ {st.note}
                       </div>
                     )}
@@ -146,12 +155,12 @@ export default function AIProcessing() {
                 </div>
 
                 <span
-                  className={`text-[11px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ${
+                  className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 border ${
                     st.status === 'ALERT'
-                      ? 'bg-red-200 text-red-800'
+                      ? 'bg-red-100 text-red-900 border-red-300'
                       : st.status === 'WARNING'
-                      ? 'bg-amber-200 text-amber-800'
-                      : 'bg-emerald-200 text-emerald-800'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300'
+                      : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                   }`}
                 >
                   {st.status}
