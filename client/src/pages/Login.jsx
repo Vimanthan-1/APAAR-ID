@@ -82,7 +82,7 @@ export default function Login() {
       <header className="bg-[#0A192F] text-white border-b border-slate-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3.5">
-            {/* TRACE Logo Shield */}
+            {/* P.R.A.M.A.N Logo Shield */}
             <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-400/40 flex items-center justify-center shrink-0 shadow-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +100,7 @@ export default function Login() {
             </div>
             <div>
               <div className="text-base font-bold tracking-tight leading-tight text-white flex items-center gap-2">
-                <span>TRACE</span>
+                <span>P.R.A.M.A.N</span>
                 <span className="text-slate-400 font-normal">|</span>
                 <span className="text-sm font-semibold text-slate-200">AICTE Student Verification Platform</span>
                 <span className="hidden sm:inline-flex text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-blue-900/60 text-blue-200 border border-blue-700/50">
@@ -108,7 +108,7 @@ export default function Login() {
                 </span>
               </div>
               <div className="text-xs text-slate-400">
-                Trust, Reconciliation, Audit &amp; Compliance Engine · Regulation Bureau
+                Platform for Record Authentication, Monitoring and Academic Network · Regulation Bureau
               </div>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function Login() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>All India Council for Technical Education (AICTE) · Regulation Bureau · New Delhi</div>
           <div className="text-slate-500 font-mono text-xs">
-            TRACE Engine · SIH26263 · Smart Automation
+            P.R.A.M.A.N · SIH26263 · Smart Automation
           </div>
         </div>
       </footer>

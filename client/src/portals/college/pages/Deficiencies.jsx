@@ -285,8 +285,8 @@ export default function Deficiencies() {
             {/* Modal Header */}
             <div className="p-4 px-6 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
-                  TRACE
+                <div className="px-2.5 py-1 min-h-[32px] rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs tracking-wider shrink-0">
+                  P.R.A.M.A.N
                 </div>
                 <div>
                   <h3 className="font-bold text-base text-white">

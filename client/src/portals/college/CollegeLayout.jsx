@@ -106,7 +106,7 @@ export default function CollegeLayout() {
             </div>
             <div>
               <div className="text-base font-bold leading-tight tracking-tight flex items-center gap-2">
-                <span>TRACE</span>
+                <span>P.R.A.M.A.N</span>
                 <span className="text-emerald-300 font-normal">|</span>
                 <span className="text-sm font-semibold text-emerald-100">Institution Portal</span>
                 <span className="hidden sm:inline-flex text-[10px] uppercase font-mono font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-800 text-emerald-200 border border-emerald-600">
@@ -267,7 +267,7 @@ export default function CollegeLayout() {
       <footer className="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            <strong>TRACE</strong> · Institutional APAAR Ingestion &amp; Regulatory Compliance Engine
+            <strong>P.R.A.M.A.N</strong> · Platform for Record Authentication, Monitoring and Academic Network
           </div>
           <div className="text-slate-500 font-mono text-xs">
             Approval Process Handbook 2026-27 · Smart Automation

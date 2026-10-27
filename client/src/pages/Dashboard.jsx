@@ -82,7 +82,7 @@ export default function Dashboard() {
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0A192F] text-white">
-                TRACE Central Surveillance
+                P.R.A.M.A.N Central Surveillance
               </span>
               <span className="text-xs text-slate-400 font-mono">Academic Cycle 2026-27</span>
               <span className="hidden sm:inline-flex text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-semibold">

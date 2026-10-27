@@ -44,7 +44,7 @@ export default function DocViewer({
               <span className="text-sm font-bold tracking-tight text-slate-100 truncate block">
                 {title || doc?.type || 'Statutory Requirement'}
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">TRACE Verification Dossier · Missing</span>
+              <span className="text-[10px] text-slate-400 font-mono">P.R.A.M.A.N Verification Dossier · Missing</span>
             </div>
           </div>
           <StatusBadge status={status || doc?.status || FINDING_STATUS.MANUAL_REVIEW_REQUIRED} size="sm" />
@@ -91,7 +91,7 @@ export default function DocViewer({
               </span>
             </div>
             <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2">
-              <span>TRACE Secure Depository · Digilocker/ABC Sync</span>
+              <span>P.R.A.M.A.N Secure Depository · Digilocker/ABC Sync</span>
               <span>•</span>
               <span className="text-emerald-400 font-semibold">Integrity Sealed</span>
             </div>

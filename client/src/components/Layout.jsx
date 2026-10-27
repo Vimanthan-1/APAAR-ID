@@ -150,7 +150,7 @@ export default function Layout() {
       {/* Top Sovereign Header Bar */}
       <header className="bg-[#0A192F] text-white border-b border-slate-800 shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* TRACE Logo & Brand */}
+          {/* P.R.A.M.A.N Logo & Brand */}
           <div className="flex items-center space-x-3.5">
             <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-400/40 flex items-center justify-center shrink-0 shadow-sm">
               <svg
@@ -170,7 +170,7 @@ export default function Layout() {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
-                  TRACE
+                  P.R.A.M.A.N
                 </span>
                 <span className="text-slate-500 font-normal">|</span>
                 <span className="text-sm font-semibold text-slate-200 hidden sm:inline">
@@ -221,7 +221,7 @@ export default function Layout() {
                         Live Compliance Alerts (3)
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-400">TRACE Watchdog</span>
+                    <span className="text-[10px] font-mono text-slate-400">P.R.A.M.A.N Watchdog</span>
                   </div>
                   <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
                     {NOTIFICATIONS.map((n) => (
@@ -399,7 +399,7 @@ export default function Layout() {
       <footer className="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            <strong>TRACE</strong> · AICTE APAAR Student Data Management &amp; Verification Platform (PS 26263)
+            <strong>P.R.A.M.A.N</strong> · Platform for Record Authentication, Monitoring and Academic Network (PS 26263)
           </div>
           <div className="text-slate-500 font-mono text-xs">
             Regulation Bureau · Smart Automation · DPDP Act Compliant
